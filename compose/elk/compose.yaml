@@ -1,0 +1,64 @@
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.3.0
+    container_name: elasticsearch
+    restart: unless-stopped
+    ports:
+      - ${ELASTICSEARCH_HTTP_PORT}:9200 # HTTP port
+      - ${ELASTICSEARCH_TRANSPORT_PORT}:9300 # Transport port
+    environment:
+      - node.name=elasticsearch
+      - discovery.type=${ELASTICSEARCH_DISCOVERY_TYPE}
+      - bootstrap.memory_lock=${ELASTICSEARCH_BOOTSTRAP_MEMORY_LOCK}
+      - xpack.security.enabled=${ELASTICSEARCH_XPACK_SECURITY_ENABLED}
+      - xpack.security.audit.enabled=${ELASTICSEARCH_XPACK_SECURITY_AUDIT_ENABLED}
+      - ELASTIC_PASSWORD=${ELASTICSEARCH_PASSWORD}
+      - ES_JAVA_OPTS=${ELASTICSEARCH_JAVA_OPTS} # Adjust memory as needed
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ./elk/elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - ./elk/elasticsearch/esdata:/usr/share/elasticsearch/data
+    env_file:
+      - .env
+    networks:
+      - elk-network
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:9.3.0
+    container_name: logstash
+    ports:
+      - ${LOGSTASH_PORT}:5044 # Default port for Beats to send data
+      - ${LOGSTASH_DEBUG_PORT}:9600 # Debug port for Logstash
+    volumes:
+      - ./elk/logstash/config/logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro # Mount your Logstash config
+    environment:
+      - LS_JAVA_OPTS=${LOGSTASH_JAVA_OPTS}
+    env_file:
+      - .env
+    depends_on:
+      - elasticsearch
+    networks:
+      - elk-network
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:9.3.0
+    container_name: kibana
+    restart: unless-stopped
+    ports:
+      - ${KIBANA_PORT}:5601 # HTTP port
+    environment:
+      - ELASTICSEARCH_HOSTS=${KIBANA_ELASTICSEARCH_HOSTS}
+      - TELEMETRY_ENABLED=false  # Disable usage collection
+    env_file:
+      - .env
+    depends_on:
+      - elasticsearch
+    networks:
+      - elk-network
+
+networks:
+  elk-network:
+    driver: bridge

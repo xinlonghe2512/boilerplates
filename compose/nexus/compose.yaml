@@ -1,0 +1,20 @@
+services:
+  nexus-repository:
+    image: docker.io/sonatype/nexus3:3.89.1-alpine
+    container_name: nexus-repository
+    restart: unless-stopped
+    ports:
+      - ${NEXUS_PORT}:8081
+      - ${NEXUS_DOCKER_REPOSITORY_PORT}:5000
+    volumes:
+      - ./nexus-repository/nexus-data:/nexus-data
+    env_file:
+      - .env
+    networks:
+      - nexus-repo-net
+
+networks:
+  nexus-repo-net:
+    driver: bridge
+
+# eof

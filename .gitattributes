@@ -1,0 +1,37 @@
+# Automatically detect text files and normalize them to LF on commit.
+* text=auto
+
+# Force LF for shell scripts and Unix-specific files (prevents Windows CRLF issues)
+*.sh text eol=lf
+*.bash text eol=lf
+Dockerfile text eol=lf
+Makefile text eol=lf
+.gitignore text eol=lf
+.gitattributes text eol=lf
+
+# Force CRLF for Windows-specific scripts
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Explicitly declare text files to ensure consistent line endings
+*.txt text
+*.md text
+*.json text
+*.yml text
+*.yaml text
+*.xml text
+*.html text
+*.css text
+*.js text
+*.ts text
+*.py text
+*.java text
+*.c text
+*.cpp text
+*.h text
+*.go text
+*.rs text
+*.rb text
+*.php text
+*.sql text
